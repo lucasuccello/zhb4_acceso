@@ -1,0 +1,93 @@
+_schema-version: "3.2"
+ID: zhb4-zhb4acceso
+version: 0.0.1
+modules:
+- name: zhb4-zhb4acceso-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: zhb4-zhb4acceso-dest-srv
+    parameters:
+      content-target: true
+  - name: zhb4-zhb4acceso-repo-host
+    parameters:
+      service-key:
+        name: zhb4-zhb4acceso-repo-host-key
+  - name: zhb4-zhb4acceso-uaa
+    parameters:
+      service-key:
+        name: zhb4-zhb4acceso-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: zhb4-zhb4acceso_repo_host
+          ServiceInstanceName: zhb4-zhb4acceso-html5-srv
+          ServiceKeyName: zhb4-zhb4acceso-repo-host-key
+          sap.cloud.service: zhb4-zhb4acceso
+        - Authentication: OAuth2UserTokenExchange
+          Name: zhb4-zhb4acceso_uaa
+          ServiceInstanceName: zhb4-zhb4acceso-xsuaa-srv
+          ServiceKeyName: zhb4-zhb4acceso-uaa-key
+          sap.cloud.service: zhb4-zhb4acceso
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: zhb4-zhb4acceso-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: zhb4-zhb4acceso-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - zhb4zhb4acceso.zip
+      name: zhb4zhb4acceso
+      target-path: resources/
+- name: zhb4zhb4acceso
+  type: html5
+  path: .
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: zhb4-zhb4acceso-dest-srv
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: zhb4-zhb4acceso-dest-srv
+    service-plan: lite
+- name: zhb4-zhb4acceso-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: zhb4-zhb4acceso-xsuaa-srv
+    service-plan: application
+- name: zhb4-zhb4acceso-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: zhb4-zhb4acceso-html5-srv
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZOS_HB4_INGRESO_PRODUCTOR_SRV" xml:lang="es" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="datosLanding" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="cuit"/>
+                </Key>
+                <Property Name="cuit" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="nombre" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="apellido" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="razonSocial" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="mail" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="cultivo" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="variedad" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="isNOk" Type="Edm.String" Nullable="false" MaxLength="1" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="mensaje" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="provincia" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="localidad" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="zona" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="rindeEsperado" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="dniFrente" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="dniDorso" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="selfie" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="extDniFrente" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="extDniDorso" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="extSelfie" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="falloCheckCredito" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Indicador" sap:sortable="false"/>
+                <Property Name="descProvincia" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+                <Property Name="descLocalidad" Type="Edm.String" Nullable="false" sap:unicode="false" sap:sortable="false"/>
+            </EntityType>
+            <EntityType Name="imagen" m:HasStream="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Imagen"/>
+                </Key>
+                <Property Name="Imagen" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="Nombre" sap:sortable="false"/>
+                <Property Name="MimeType" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="Tipo archivo" sap:sortable="false"/>
+                <Property Name="Value" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="Valor" sap:sortable="false"/>
+            </EntityType>
+            <EntityType Name="bpsAsociados" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Bp"/>
+                </Key>
+                <Property Name="Bp" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Email" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Perfil" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Cuit" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="RazonSocial" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityContainer Name="ZOS_HB4_INGRESO_PRODUCTOR_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="datosLandingSet" EntityType="ZOS_HB4_INGRESO_PRODUCTOR_SRV.datosLanding" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+                <EntitySet Name="imagenSet" EntityType="ZOS_HB4_INGRESO_PRODUCTOR_SRV.imagen" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="bpsAsociadosSet" EntityType="ZOS_HB4_INGRESO_PRODUCTOR_SRV.bpsAsociados" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+            </EntityContainer>
+            <atom:link rel="self" href="http://reds4:8000/sap/opu/odata/sap/ZOS_HB4_INGRESO_PRODUCTOR_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://reds4:8000/sap/opu/odata/sap/ZOS_HB4_INGRESO_PRODUCTOR_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>
