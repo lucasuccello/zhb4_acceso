@@ -1,25 +1,27 @@
 {
   "welcomeFile": "/index.html",
-  "authenticationMethod": "route",
+  "authenticationMethod": "none",
+  "logout": {
+    "logoutEndpoint": "/do/logout"
+  },
   "routes": [
     {
-      "source": "^/sap/(.*)$",
-      "target": "/sap/$1",
-      "destination": "HB4_BACKEND_SAP",
-      "authenticationType": "xsuaa",
-      "csrfProtection": false
+      "authenticationType": "none",
+      "csrfProtection": false,
+      "source": "^/sap/opu/odata/sap/ZOS_HB4_INGRESO_PRODUCTOR_SRV/",
+      "destination": "HB4_BACKEND_SAP"
     },
     {
-      "source": "^/resources/(.*)$",
-      "target": "/resources/$1",
       "authenticationType": "none",
-      "destination": "ui5"
+      "csrfProtection": false,
+      "source": "^/v2/hb4-landing/",
+      "destination": "HB4_LANDING_SRV"
     },
     {
-      "source": "^/test-resources/(.*)$",
-      "target": "/test-resources/$1",
       "authenticationType": "none",
-      "destination": "ui5"
+      "csrfProtection": false,
+      "source": "^/v2/check-nosis/",
+      "destination": "HB4_CHECK_NOSIS_SRV"
     },
     {
       "source": "^(.*)$",

@@ -1,0 +1,84 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:u="sap.ui.unified" xmlns:l="sap.ui.layout" xmlns:tnt="sap.tnt" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Dialog id="dialogAddUser" title="{i18n>tit_addUser}" contentWidth="30%" busyIndicatorDelay="0">
+		<l:Grid defaultSpan="L12 M12 S12" width="auto" id="idGridAddUser">
+			<l:content>
+                <f:Form id="idFormUser" editable="true">
+                    <f:formContainers>
+                        <f:FormContainer>
+                            <f:formElements>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <ComboBox id="cboCuenta" items="{ path: '/bpsAsociadosSet', sorter: { path: 'RazonSocial' } }" selectedKey="{ModelAddUser>/bp}">
+                                            <core:Item key="{Bp}" text="{RazonSocial}"/>
+                                        </ComboBox>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_cuenta}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <Input id="inpNombre" value="{ModelAddUser>/nombre}" valueLiveUpdate="true"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_nombre}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <Input id="inpApellido" value="{ModelAddUser>/apellido}" valueLiveUpdate="true"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_apellido}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <Input valueState="{ModelAddUser>/valueStateMail}" valueStateText="{i18n>sttx_mail}" id="inpMail" value="{ModelAddUser>/email}" valueLiveUpdate="true" liveChange="onValidarMail"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_email}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <Select selectedKey="{ModelAddUser>/rol}" change="onValidarRol">
+                                            <core:Item key="F" text="{i18n>txt_firm}"/>
+                                            <core:Item key="N" text="{i18n>txt_noFirm}"/>
+                                        </Select>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_rol}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddUser>/mostrarEstatuto}">
+                                    <f:fields>
+                                        <u:FileUploader id="fileUploaderEst" fileType="pdf" width="100%" name="Estatuto" tooltip="{i18n>tlt_estatuto}"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_estatuto}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddUser>/mostrarEstatuto}">
+                                    <f:fields>
+                                        <u:FileUploader id="fileUploaderAct" fileType="pdf" width="100%" name="Acta" tooltip="{i18n>tlt_acta}"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_acta}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                            </f:formElements>
+                        </f:FormContainer>
+                    </f:formContainers>
+                    <f:layout>
+                        <f:ResponsiveGridLayout/>
+                    </f:layout>
+                </f:Form>
+			</l:content>
+		</l:Grid>
+		<buttons>
+            <Button text="{i18n>btn_guardar}" press="onGuardarUser" type="Emphasized"/>
+			<Button text="{i18n>btn_cancelar}" press="onCancelarUser" type="Default"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

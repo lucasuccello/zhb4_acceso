@@ -26,6 +26,12 @@ server:
         url: http://reds4:8000
         client: '130'
         destination: HB4_BACKEND_SAP
+      - path: /v2/hb4-landing
+        url: https://bioceres-semillas-sa-biox-dev-hb4-srv.cfapps.us21.hana.ondemand.com
+        destination: HB4_LANDING_SRV
+      - path: /v2/check-nosis
+        url: https://bioceres-semillas-sa-biox-dev-zhb4-chequeo-nosis-srv.cfapps.us21.hana.ondemand.com
+        destination: HB4_CHECK_NOSIS_SRV
   - name: fiori-tools-appreload
     afterMiddleware: compression
     configuration:

@@ -13,11 +13,27 @@
         "ach": "ach",
         "dataSources": {
             "mainService": {
-                "uri": "/sap/opu/odata/sap/ZOS_HB4_INGRESO_PRODUCTOR_SRV",
+                "uri": "sap/opu/odata/sap/ZOS_HB4_INGRESO_PRODUCTOR_SRV",
                 "type": "OData",
                 "settings": {
                     "odataVersion": "2.0",
                     "localUri": "localService/metadata.xml"
+                }
+            },
+            "landingService": {
+                "uri": "v2/hb4-landing/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "2.0",
+                    "localUri": "localService/hb4-landing/metadata.xml"
+                }
+            },
+            "nosisService": {
+                "uri": "v2/check-nosis/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "2.0",
+                    "localUri": "localService/check-nosis/metadata.xml"
                 }
             }
         },
@@ -82,6 +98,26 @@
             "": {
                 "dataSource": "mainService",
                 "preload": true
+            },
+            "landingMDL": {
+                "dataSource": "landingService",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "OneWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false
+                }
+            },
+            "nosisMDL": {
+                "dataSource": "nosisService",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "OneWay",
+                    "refreshAfterChange": false,
+					"defaultCountMode": "Request",
+					"disableHeadRequestForToken": true,
+					"useBatch": false
+                }
             }
         },
         "resources": {

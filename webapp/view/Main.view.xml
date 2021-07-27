@@ -5,7 +5,7 @@
     xmlns="sap.m"
 >		<App id="app">
 			<pages>
-				<Page id="page" title="{i18n>title}" floatingFooter="true">
+				<Page id="page" title="{i18n>title}" floatingFooter="true" showFooter="{= ${viewModel>/puedeAgregarUsuario} || ${viewModel>/puedeAgregarCuenta}}">
 					<content>
                         <Table id="idTablaBPs" items="{ path: '/bpsAsociadosSet', sorter: { path: 'RazonSocial' } }" growing="true" growingThreshold="50" growingTriggerText="{i18n>growingTriggerText}" popinLayout="Block" fixedLayout="false" updateStarted="onUpdateStarted" updateFinished="onUpdateFinished"
                         noDataText="{i18n>noData}" showNoData="true">
@@ -19,13 +19,13 @@
                             </headerToolbar>
                             <columns>
                                 <!-- <Column width="2em" popinDisplay="WithoutHeader" demandPopin="true"></Column> -->
-                                <Column popinDisplay="WithoutHeader" demandPopin="true">
+                                <Column width="41%" popinDisplay="WithoutHeader" demandPopin="true">
                                     <Text text="{i18n>col_razonSocial}" tooltip="{i18n>col_cliente}"/>
                                 </Column>
-                                <Column popinDisplay="WithoutHeader" demandPopin="true">
+                                <Column width="25%" popinDisplay="WithoutHeader" demandPopin="true">
                                     <Text text="{i18n>col_cuit}" tooltip="{i18n>col_cuit}"/>
                                 </Column>
-                                <Column popinDisplay="WithoutHeader" demandPopin="true">
+                                <Column width="33%" hAlign="Center" popinDisplay="WithoutHeader" demandPopin="true">
                                     <Text text="{i18n>col_favorito}" tooltip="{i18n>col_favorito}"/>
                                 </Column>
                                 <Column width="14em" popinDisplay="Inline" demandPopin="true" minScreenWidth="Medium" hAlign="Center">
@@ -40,9 +40,9 @@
                                         <Text text="{Cuit}"/>
                                         <sap.ui.core:Icon xmlns:sap.ui.core="sap.ui.core" src="sap-icon://favorite" visible="{ path: 'Favorito', formatter: '.formatter.visibleFavorito' }"/>
                                         <HBox justifyContent="Center">
-                                            <Button text="{i18n>seleccionar}" icon="sap-icon://cursor-arrow" type="Emphasized" press="onSeleccionar" tooltip="{i18n>seleccionar_tooltip}"/>
+                                            <Button class="sapUiTinyMarginEnd" text="{i18n>seleccionar}" icon="sap-icon://cursor-arrow" type="Emphasized" press="onSeleccionar" tooltip="{i18n>seleccionar_tooltip}"/>
                                             <Button icon="sap-icon://unfavorite" press="onFavorito" tooltip="{i18n>seleccionar_favorito}"/>
-                                            <Button icon="sap-icon://delete" press="onBorrarCuenta" tooltip="{i18n>seleccionar_Borrar}"/>
+                                            <Button class="sapUiTinyMarginBegin" visible="false" icon="sap-icon://delete" press="onBorrarCuenta" tooltip="{i18n>seleccionar_Borrar}"/>
                                         </HBox>
                                     </cells>
                                 </ColumnListItem>
@@ -52,8 +52,8 @@
                     <footer>
                         <OverflowToolbar>
                             <ToolbarSpacer/>
-                            <Button type="Accept" text="Alta Usuario" icon="sap-icon://add-employee" press="onAltaUsuario"/>
-                            <Button type="Accept" text="Alta Cuenta" icon="sap-icon://create-form" press="onAltaCuenta"/>
+                            <Button visible="{viewModel>/puedeAgregarUsuario}" type="Accept" text="Alta Usuario" icon="sap-icon://add-employee" press="onAltaUsuario"/>
+                            <Button visible="{viewModel>/puedeAgregarCuenta}" type="Accept" text="Alta Cuenta" icon="sap-icon://create-form" press="onAltaCuenta"/>
                         </OverflowToolbar>
                     </footer>
 				</Page>

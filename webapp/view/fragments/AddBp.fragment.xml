@@ -1,0 +1,79 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:tnt="sap.tnt" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Dialog id="dialogAddBp" title="{i18n>tit_addBp}" contentWidth="30%" busyIndicatorDelay="0">
+		<l:Grid defaultSpan="L12 M12 S12" width="auto" id="idGridAddBp">
+			<l:content>
+                <f:Form id="idFormBp" editable="true">
+                    <f:formContainers>
+                        <f:FormContainer>
+                            <f:formElements>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <Input valueState="{ModelAddBp>/valueStateCuit}" valueStateText="{i18n>msj_ing_cuit}" id="inpCuit" value="{ModelAddBp>/cuit}" valueLiveUpdate="true" liveChange="onValidarCuit"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_cuit}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement>
+                                    <f:fields>
+                                        <ComboBox busyIndicatorDelay="0" id="cboCultivo" items="{landingMDL>/Cultivos}" selectedKey="{ModelAddBp>/cultivoCode}" value="{ModelAddBp>/cultivo}" change="onSeleccionarCultivo">
+                                            <core:Item key="{landingMDL>ID}" text="{landingMDL>descripcion}"/>
+                                        </ComboBox>   
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_cultivo}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddBp>/mostrarProvincia}">
+                                    <f:fields>
+                                        <ComboBox busyIndicatorDelay="0" id="cboProvincia" items="{Provincias>/}" selectedKey="{ModelAddBp>/provinciaCode}" value="{ModelAddBp>/provincia}" change="onSeleccionarProvincia">
+                                            <core:Item key="{Provincias>ID}" text="{Provincias>descripcion}"/>
+                                        </ComboBox>  
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_provincia}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddBp>/mostrarLocalidad}">
+                                    <f:fields>
+                                        <ComboBox busyIndicatorDelay="0" id="cboLocalidad" items="{path: 'Localidades>/', sorter: { path: 'Localidades>descripcion' } }" selectedKey="{ModelAddBp>/localidadCode}" value="{ModelAddBp>/localidad}" change="onSeleccionarLocalidad">
+                                            <core:Item key="{Localidades>ID}" text="{Localidades>descripcion}"/>
+                                        </ComboBox>  
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_localidad}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddBp>/mostrarVariedad}">
+                                    <f:fields>
+                                        <ComboBox busyIndicatorDelay="0" id="cboVariedad" items="{Variedades>/}" selectedKey="{ModelAddBp>/variedadCode}" value="{ModelAddBp>/variedad}" change="onSeleccionarVariedad">
+                                            <core:Item key="{Variedades>ID}" text="{Variedades>descripcion}"/>
+                                        </ComboBox>  
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_variedad}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddBp>/mostrarVariedad}">
+                                    <f:fields>
+                                        <Input id="inpRinde" value="{ModelAddBp>/rindeEsperado}"/>   
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_rinde}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                            </f:formElements>
+                        </f:FormContainer>
+                    </f:formContainers>
+                    <f:layout>
+                        <f:ResponsiveGridLayout/>
+                    </f:layout>
+                </f:Form>
+			</l:content>
+		</l:Grid>
+		<buttons>
+            <Button text="{i18n>btn_guardar}" press="onGuardarBp" type="Emphasized"/>
+			<Button text="{i18n>btn_cancelar}" press="onCancelarBp" type="Default"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
