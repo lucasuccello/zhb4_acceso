@@ -8,15 +8,24 @@
                             <f:formElements>
                                 <f:FormElement>
                                     <f:fields>
-                                        <ComboBox id="cboCuenta" items="{ path: '/bpsAsociadosSet', sorter: { path: 'RazonSocial' } }" selectedKey="{ModelAddUser>/bp}">
-                                            <core:Item key="{Bp}" text="{RazonSocial}"/>
-                                        </ComboBox>
+                                        <VBox>
+                                            <ComboBox change="onSeleccionarCuenta" id="cboCuenta" showSecondaryValues= "true" items="{ path: 'ModelCuentas>/', sorter: { path: 'RazonSocial' } }" selectedKey="{ModelAddUser>/bp}" width="100%">
+                                                <core:ListItem icon="sap-icon://accept" key="{ModelCuentas>Bp}" text="{ModelCuentas>RazonSocial}" additionalText="{path: 'ModelCuentas>PuedeGenerarUsuario', formatter:'.formatter.puedeAgregarTexto'}"/>
+                                            </ComboBox>
+                                            <MessageStrip
+                                                visible="{= !${ModelAddUser>/PuedeAgregar}}"
+                                                text="No puede agregar mas usuarios en la cuenta seleccionada"
+                                                type="Error"
+                                                showIcon="true"
+                                                enableFormattedText="true"
+                                                class="sapUiSmallMarginTop"/>
+                                        </VBox>
                                     </f:fields>
                                     <f:label>
                                         <Label text="{i18n>lbl_cuenta}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
-                                <f:FormElement>
+                                <f:FormElement visible="{ModelAddUser>/PuedeAgregar}">
                                     <f:fields>
                                         <Input id="inpNombre" value="{ModelAddUser>/nombre}" valueLiveUpdate="true"/>
                                     </f:fields>
@@ -24,7 +33,7 @@
                                         <Label text="{i18n>lbl_nombre}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
-                                <f:FormElement>
+                                <f:FormElement visible="{ModelAddUser>/PuedeAgregar}">
                                     <f:fields>
                                         <Input id="inpApellido" value="{ModelAddUser>/apellido}" valueLiveUpdate="true"/>
                                     </f:fields>
@@ -32,7 +41,7 @@
                                         <Label text="{i18n>lbl_apellido}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
-                                <f:FormElement>
+                                <f:FormElement visible="{ModelAddUser>/PuedeAgregar}">
                                     <f:fields>
                                         <Input valueState="{ModelAddUser>/valueStateMail}" valueStateText="{i18n>sttx_mail}" id="inpMail" value="{ModelAddUser>/email}" valueLiveUpdate="true" liveChange="onValidarMail"/>
                                     </f:fields>
@@ -40,31 +49,57 @@
                                         <Label text="{i18n>lbl_email}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
-                                <f:FormElement>
+                                <f:FormElement visible="{ModelAddUser>/PuedeAgregar}">
                                     <f:fields>
-                                        <Select selectedKey="{ModelAddUser>/rol}" change="onValidarRol">
-                                            <core:Item key="F" text="{i18n>txt_firm}"/>
-                                            <core:Item key="N" text="{i18n>txt_noFirm}"/>
-                                        </Select>
+                                        <VBox>
+                                            <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
+                                                <Label text="{i18n>lbl_rol}:" class="sapUiTinyMarginEnd"/>
+                                                <Switch state="{ModelAddUser>/rol}" customTextOn="Si" customTextOff="No" change="onValidarRol">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Switch>
+                                            </HBox>
+                                            <MessageStrip
+                                                visible="{= !${ModelAddUser>/PuedeGenerarNF} &amp;&amp; !${ModelAddUser>/mostrarEstatuto}}"
+                                                text="{i18n>msj_error_nf}"
+                                                type="Error"
+                                                showIcon="true"
+                                                enableFormattedText="true"
+                                                class="sapUiSmallMarginTop"/>
+                                        </VBox>
                                     </f:fields>
-                                    <f:label>
+                                    <!-- <f:label>
                                         <Label text="{i18n>lbl_rol}" required="true"/>
-                                    </f:label>
+                                    </f:label> -->
                                 </f:FormElement>
-                                <f:FormElement visible="{ModelAddUser>/mostrarEstatuto}">
+                                <f:FormElement visible="{= ${ModelAddUser>/mostrarEstatuto} &amp;&amp; ${ModelAddUser>/PuedeAgregar}}">
                                     <f:fields>
-                                        <u:FileUploader id="fileUploaderEst" fileType="pdf" width="100%" name="Estatuto" tooltip="{i18n>tlt_estatuto}"/>
+                                        <!-- <CheckBox text="Es Apoderado" selected="{ModelAddUser>/esApoderado}" select="onValidarApoderado"/> -->
+                                        <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
+                                            <Label text="{i18n>lbl_apoderado}:" class="sapUiTinyMarginEnd"/>
+                                            <Switch state="{ModelAddUser>/esApoderado}" customTextOn="Si" customTextOff="No" change="onValidarApoderado">
+                                                <layoutData>
+                                                    <FlexItemData growFactor="1" />
+                                                </layoutData>
+                                            </Switch>
+                                        </HBox>
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement visible="{= ${ModelAddUser>/mostrarEstatuto} &amp;&amp; !${ModelAddUser>/esApoderado} &amp;&amp; ${ModelAddUser>/PuedeAgregar}}">
+                                    <f:fields>
+                                        <u:FileUploader buttonText="{i18n>txt_bot_fu}" icon="sap-icon://upload" id="fileUploaderEst" fileType="pdf" width="100%" name="Estatuto" tooltip="{i18n>tlt_estatuto}"/>
                                     </f:fields>
                                     <f:label>
                                         <Label text="{i18n>lbl_estatuto}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
-                                <f:FormElement visible="{ModelAddUser>/mostrarEstatuto}">
+                                <f:FormElement visible="{= ${ModelAddUser>/mostrarEstatuto} &amp;&amp; ${ModelAddUser>/PuedeAgregar}}">
                                     <f:fields>
-                                        <u:FileUploader id="fileUploaderAct" fileType="pdf" width="100%" name="Acta" tooltip="{i18n>tlt_acta}"/>
+                                        <u:FileUploader buttonText="{i18n>txt_bot_fu}" icon="sap-icon://upload" id="fileUploaderAct" fileType="pdf" width="100%" name="Acta" tooltip="{i18n>tlt_acta}"/>
                                     </f:fields>
                                     <f:label>
-                                        <Label text="{i18n>lbl_acta}" required="true"/>
+                                        <Label text="{= ${ModelAddUser>/esApoderado} ? ${i18n>lbl_poder} : ${i18n>lbl_acta}}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
                             </f:formElements>
@@ -77,7 +112,7 @@
 			</l:content>
 		</l:Grid>
 		<buttons>
-            <Button text="{i18n>btn_guardar}" press="onGuardarUser" type="Emphasized"/>
+            <Button text="{i18n>btn_guardar}" press="onGuardarUser" type="Emphasized" enabled="{ModelAddUser>/PuedeAgregar}"/>
 			<Button text="{i18n>btn_cancelar}" press="onCancelarUser" type="Default"/>
 		</buttons>
 	</Dialog>

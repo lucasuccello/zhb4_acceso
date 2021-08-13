@@ -35,6 +35,14 @@
                     "odataVersion": "2.0",
                     "localUri": "localService/check-nosis/metadata.xml"
                 }
+            },
+            "onBoardService": {
+                "uri": "sap/opu/odata/sap/ZOS_HB4_ONBOARDING_SRV/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "2.0",
+                    "localUri": "localService/ZOS_HB4_ONBOARDING_SRV/metadata.xml"
+                }
             }
         },
         "crossNavigation": {
@@ -50,6 +58,11 @@
                     "icon": "sap-icon://accept"
                 }
             }
+        }
+    },
+    "sap.cloud.portal": {
+        "gestionAccesos-display": {
+            "vizType": "zhb4.zhb4accesotile"
         }
     },
     "sap.ui": {
@@ -118,6 +131,10 @@
 					"disableHeadRequestForToken": true,
 					"useBatch": false
                 }
+            },
+            "onBoarding": {
+                "dataSource": "onBoardService",
+                "preload": true
             }
         },
         "resources": {

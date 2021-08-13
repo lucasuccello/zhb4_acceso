@@ -15,6 +15,14 @@ sap.ui.define([], function () {
 			}else{
                 return false;
             }
+        },
+        
+        puedeAgregarTexto: function (sPuedeAgregar) {
+			if (sPuedeAgregar === "X") {
+				return "Si Puede Agregar";
+			}else{
+                return "No Puede Agregar";
+            }
 		}
 
 	};

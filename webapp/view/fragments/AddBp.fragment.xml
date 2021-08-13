@@ -8,7 +8,8 @@
                             <f:formElements>
                                 <f:FormElement>
                                     <f:fields>
-                                        <Input valueState="{ModelAddBp>/valueStateCuit}" valueStateText="{i18n>msj_ing_cuit}" id="inpCuit" value="{ModelAddBp>/cuit}" valueLiveUpdate="true" liveChange="onValidarCuit"/>
+                                        <MaskInput id="inpCuit" value="{ModelAddBp>/cuit}" required="true" mask="99-99999999-9" change="onValidarCuit" placeholderSymbol="_" valueState="{ModelAddBp>/valueStateCuit}" valueStateText="{i18n>msj_ing_cuit}"/>
+                                        <!-- <Input valueState="{ModelAddBp>/valueStateCuit}" valueStateText="{i18n>msj_ing_cuit}" id="inpCuit" value="{ModelAddBp>/cuit}" valueLiveUpdate="true" liveChange="onValidarCuit"/> -->
                                     </f:fields>
                                     <f:label>
                                         <Label text="{i18n>lbl_cuit}" required="true"/>
@@ -16,8 +17,8 @@
                                 </f:FormElement>
                                 <f:FormElement>
                                     <f:fields>
-                                        <ComboBox busyIndicatorDelay="0" id="cboCultivo" items="{landingMDL>/Cultivos}" selectedKey="{ModelAddBp>/cultivoCode}" value="{ModelAddBp>/cultivo}" change="onSeleccionarCultivo">
-                                            <core:Item key="{landingMDL>ID}" text="{landingMDL>descripcion}"/>
+                                        <ComboBox busyIndicatorDelay="0" id="cboCultivo" items="{ModelCultivos>/}" selectedKey="{ModelAddBp>/cultivoCode}" value="{ModelAddBp>/cultivo}" change="onSeleccionarCultivo">
+                                            <core:Item key="{ModelCultivos>ID}" text="{ModelCultivos>descripcion}"/>
                                         </ComboBox>   
                                     </f:fields>
                                     <f:label>
@@ -36,7 +37,7 @@
                                 </f:FormElement>
                                 <f:FormElement visible="{ModelAddBp>/mostrarLocalidad}">
                                     <f:fields>
-                                        <ComboBox busyIndicatorDelay="0" id="cboLocalidad" items="{path: 'Localidades>/', sorter: { path: 'Localidades>descripcion' } }" selectedKey="{ModelAddBp>/localidadCode}" value="{ModelAddBp>/localidad}" change="onSeleccionarLocalidad">
+                                        <ComboBox busyIndicatorDelay="0" id="cboLocalidad" items="{path: 'Localidades>/', sorter: { path: 'descripcion' } }" selectedKey="{ModelAddBp>/localidadCode}" value="{ModelAddBp>/descripcion}" change="onSeleccionarLocalidad">
                                             <core:Item key="{Localidades>ID}" text="{Localidades>descripcion}"/>
                                         </ComboBox>  
                                     </f:fields>

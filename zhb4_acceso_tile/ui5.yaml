@@ -1,8 +1,7 @@
-specVersion: '1.0'
+specVersion: '2.4'
 metadata:
-  name: 'zhb4_acceso'
+  name: 'zhb4_acceso_tile'
 type: application
-ui5Theme: sap_fiori_3
 server:
   customMiddleware:
   - name: fiori-tools-proxy
@@ -14,12 +13,6 @@ server:
         url: http://reds4:8000
         client: '130'
         destination: HB4_BACKEND_SAP
-      - path: /v2/hb4-landing
-        url: https://bioceres-semillas-sa-bioxqas-qas-hb4-srv.cfapps.us21.hana.ondemand.com
-        destination: HB4_LANDING_SRV
-      - path: /v2/check-nosis
-        url: https://bioceres-semillas-sa-bioxqas-qas-zhb4-chequeo-nosis-srv.cfapps.us21.hana.ondemand.com
-        destination: HB4_CHECK_NOSIS_SRV
       ui5:
         path: 
         - /resources

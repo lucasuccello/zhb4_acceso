@@ -1,59 +1,77 @@
 <mvc:View
     controllerName="zhb4.zhb4acceso.controller.Main"
     xmlns:mvc="sap.ui.core.mvc"
+    xmlns:fb="sap.ui.comp.filterbar"
     displayBlock="true"
     xmlns="sap.m"
 >		<App id="app">
 			<pages>
-				<Page id="page" title="{i18n>title}" floatingFooter="true" showFooter="{= ${viewModel>/puedeAgregarUsuario} || ${viewModel>/puedeAgregarCuenta}}">
+				<Page id="page" busyIndicatorDelay="0" title="{i18n>title}" floatingFooter="true" showFooter="{= ${viewModel>/puedeAgregarUsuario} || ${viewModel>/puedeAgregarCuenta}}">
 					<content>
-                        <Table id="idTablaBPs" items="{ path: '/bpsAsociadosSet', sorter: { path: 'RazonSocial' } }" growing="true" growingThreshold="50" growingTriggerText="{i18n>growingTriggerText}" popinLayout="Block" fixedLayout="false" updateStarted="onUpdateStarted" updateFinished="onUpdateFinished"
-                        noDataText="{i18n>noData}" showNoData="true">
-                            <headerToolbar>
-                                <OverflowToolbar>
-                                    <content>
-                                        <!--<Title text="{i18n>titulo_tabla}" level="H2" width="200px"/>-->
-                                        <ToolbarSpacer/>
-                                    </content>
-                                </OverflowToolbar>
-                            </headerToolbar>
-                            <columns>
-                                <!-- <Column width="2em" popinDisplay="WithoutHeader" demandPopin="true"></Column> -->
-                                <Column width="41%" popinDisplay="WithoutHeader" demandPopin="true">
-                                    <Text text="{i18n>col_razonSocial}" tooltip="{i18n>col_cliente}"/>
-                                </Column>
-                                <Column width="25%" popinDisplay="WithoutHeader" demandPopin="true">
-                                    <Text text="{i18n>col_cuit}" tooltip="{i18n>col_cuit}"/>
-                                </Column>
-                                <Column width="33%" hAlign="Center" popinDisplay="WithoutHeader" demandPopin="true">
-                                    <Text text="{i18n>col_favorito}" tooltip="{i18n>col_favorito}"/>
-                                </Column>
-                                <Column width="14em" popinDisplay="Inline" demandPopin="true" minScreenWidth="Medium" hAlign="Center">
-                                    <Text text="{i18n>col_acciones}" tooltip="{i18n>col_acciones}"/>
-                                </Column>
-                            </columns>
+                        <fb:FilterBar id="filterBar" class="sapUiResponsivePadding--header sapUiResponsivePadding--content sapUiNoMargin" reset="onReset"
+                            search="onSearch" showGoOnFB="false" showRestoreButton="false" showClearButton="false" useToolbar="false" showFilterConfiguration="false">
+                            <fb:filterGroupItems>
+                                <fb:FilterGroupItem groupName="__$INTERNAL$" name="RazonSocial" label="Razon Social" partOfCurrentVariant="true"
+                                    visibleInFilterBar="true">
+                                    <fb:control>
+                                        <SearchField id="_inpRS" width="200px" search="onFiltrarCuentas"/>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+                                <fb:FilterGroupItem groupName="__$INTERNAL$" name="Cuit" label="Cuit" partOfCurrentVariant="true"
+                                    visibleInFilterBar="true">
+                                    <fb:control>
+                                        <SearchField id="_inpCuit" width="200px" search="onFiltrarCuentas"/>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+                            </fb:filterGroupItems>
+                        </fb:FilterBar>
+                        <IconTabBar id="_tabs" expanded="{device>/isNoPhone}" class="sapUiResponsiveContentPadding">
                             <items>
-                                <ColumnListItem vAlign="Middle">
-                                    <cells>
-                                        <!-- <core:Icon size="2rem" src="{path: '', formatter: '.formatterIcono' }" tooltip="{path: '', formatter: '.formatterTooltipIcono' }"/> -->
-                                        <ObjectIdentifier title="{RazonSocial}"/>
-                                        <Text text="{Cuit}"/>
-                                        <sap.ui.core:Icon xmlns:sap.ui.core="sap.ui.core" src="sap-icon://favorite" visible="{ path: 'Favorito', formatter: '.formatter.visibleFavorito' }"/>
-                                        <HBox justifyContent="Center">
-                                            <Button class="sapUiTinyMarginEnd" text="{i18n>seleccionar}" icon="sap-icon://cursor-arrow" type="Emphasized" press="onSeleccionar" tooltip="{i18n>seleccionar_tooltip}"/>
-                                            <Button icon="sap-icon://unfavorite" press="onFavorito" tooltip="{i18n>seleccionar_favorito}"/>
-                                            <Button class="sapUiTinyMarginBegin" visible="false" icon="sap-icon://delete" press="onBorrarCuenta" tooltip="{i18n>seleccionar_Borrar}"/>
-                                        </HBox>
-                                    </cells>
-                                </ColumnListItem>
+                                <IconTabFilter id="_TabCuentas" text="Cuentas">
+                                    <content>
+                                        <Table id="idTablaBPs" items="{ path: 'ModelCuentas>/', sorter: { path: 'RazonSocial' } }" growing="true" growingThreshold="20" growingTriggerText="{i18n>growingTriggerText}" popinLayout="Block" fixedLayout="false" updateStarted="onUpdateStarted" updateFinished="onUpdateFinished"
+                                        noDataText="{i18n>noData}" showNoData="true">
+                                            <columns>
+                                                <!-- <Column width="2em" popinDisplay="WithoutHeader" demandPopin="true"></Column> -->
+                                                <Column width="41%" popinDisplay="WithoutHeader" demandPopin="true">
+                                                    <Text text="{i18n>col_razonSocial}" tooltip="{i18n>col_razonSocial}"/>
+                                                </Column>
+                                                <Column width="{= !${viewModel>/EsInterno} ? '15%' : '39%'}" popinDisplay="WithoutHeader" demandPopin="true">
+                                                    <Text text="{i18n>col_cuit}" tooltip="{i18n>col_cuit}"/>
+                                                </Column>
+                                                <Column width="23%" hAlign="Center" popinDisplay="WithoutHeader" demandPopin="true" visible="{= !${viewModel>/EsInterno}}">
+                                                    <Text text="{i18n>col_favorito}" tooltip="{i18n>col_favorito}"/>
+                                                </Column>
+                                                <Column width="20%" popinDisplay="Inline" demandPopin="true" minScreenWidth="Medium" hAlign="Center">
+                                                    <Text text="{i18n>col_acciones}" tooltip="{i18n>col_acciones}"/>
+                                                </Column>
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem vAlign="Middle">
+                                                    <cells>
+                                                        <!-- <core:Icon size="2rem" src="{path: '', formatter: '.formatterIcono' }" tooltip="{path: '', formatter: '.formatterTooltipIcono' }"/> -->
+                                                        <ObjectIdentifier title="{ModelCuentas>RazonSocial}"/>
+                                                        <Text text="{ModelCuentas>Cuit}"/>
+                                                        <sap.ui.core:Icon xmlns:sap.ui.core="sap.ui.core" src="sap-icon://favorite" visible="{ path: 'ModelCuentas>Favorito', formatter: '.formatter.visibleFavorito' }"/>
+                                                        <HBox justifyContent="Center">
+                                                            <Button class="sapUiTinyMarginEnd" text="{i18n>seleccionar}" icon="sap-icon://cursor-arrow" type="Emphasized" press="onSeleccionar" tooltip="{i18n>seleccionar_tooltip}"/>
+                                                            <Button icon="sap-icon://unfavorite" press="onFavorito" tooltip="{i18n>seleccionar_favorito}" visible="{= !${viewModel>/EsInterno}}"/>
+                                                            <Button class="sapUiTinyMarginBegin" visible="false" icon="sap-icon://delete" press="onBorrarCuenta" tooltip="{i18n>seleccionar_Borrar}"/>
+                                                        </HBox>
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>      
+                                    </content>
+                                </IconTabFilter>
                             </items>
-                        </Table>
+                        </IconTabBar>
                     </content>
                     <footer>
                         <OverflowToolbar>
                             <ToolbarSpacer/>
-                            <Button visible="{viewModel>/puedeAgregarUsuario}" type="Accept" text="Alta Usuario" icon="sap-icon://add-employee" press="onAltaUsuario"/>
-                            <Button visible="{viewModel>/puedeAgregarCuenta}" type="Accept" text="Alta Cuenta" icon="sap-icon://create-form" press="onAltaCuenta"/>
+                            <Button visible="{= ${viewModel>/puedeAgregarUsuario} &amp;&amp; !${viewModel>/EsInterno}}" text="Alta Usuario" icon="sap-icon://add-employee" press="onAltaUsuario"/>
+                            <Button visible="{= ${viewModel>/puedeAgregarCuenta} &amp;&amp; !${viewModel>/EsInterno}}" text="Alta Cuenta" icon="sap-icon://create-form" press="onAltaCuenta"/>
                         </OverflowToolbar>
                     </footer>
 				</Page>

@@ -14,9 +14,11 @@ sap.ui.define([
     function (Controller, formatter, MessageBox, MessageToast, Fragment, JSONModel, Filter, FilterOperator) {
         "use strict";
 
+        var oController;
         return Controller.extend("zhb4.zhb4acceso.controller.Main", {
             formatter: formatter,
             onInit: function () {
+                oController = this;
                 this.oTextos = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 //-------------------Inicio JOLU1----------------------
                 this.getView().setModel(this.getOwnerComponent().getModel("landingMDL"), "landingMdl");
@@ -26,13 +28,33 @@ sap.ui.define([
             },
 
             onFavorito: function (oEvent) {
+                var oObject = oEvent.getSource().getBindingContext("ModelCuentas").getObject();
+                MessageBox.show(
+                    "Se guardará como favorita la cuenta seleccionada", {
+                    icon: MessageBox.Icon.INFORMATION,
+                    title: "Confirmar",
+                    actions: [MessageBox.Action.CANCEL, MessageBox.Action.OK],
+                    emphasizedAction: MessageBox.Action.OK,
+                    onClose: function (oAction) {
+                        if (oAction == 'OK') {
+                            this._onSetearFavorito(oObject);
+                        }
+
+                    }.bind(this)
+                }
+                )
+
+            },
+
+            _onSetearFavorito: function (oObject) {
+                var that = this;
                 var sPath = this.getView().getModel().createKey("/bpsAsociadosSet", {
-                    Bp: oEvent.getSource().getBindingContext().getObject().Bp
+                    Bp: oObject.Bp
                 });
 
                 this.getView().setBusy(true);
                 var oEntry = {
-                    Bp: oEvent.getSource().getBindingContext().getObject().Bp,
+                    Bp: oObject.Bp,
                     Email: "",
                     Perfil: "",
                     Cuit: "",
@@ -42,7 +64,9 @@ sap.ui.define([
 
                 this.getView().getModel().update(sPath, oEntry, {
                     success: function (resultado) {
-                        sap.m.MessageToast.show(this.oTextos.getText("mensaje_success_agregar_favorito"));
+                        sap.m.MessageToast.show(that.oTextos.getText("mensaje_success_agregar_favorito"), {
+                            onClose: window.location.reload()
+                        });
                         this.getView().setBusy(false);
                     }.bind(this),
                     error: function (error) {
@@ -55,8 +79,8 @@ sap.ui.define([
             onSeleccionar: function (oEvent) {
                 var mensaje;
                 var titulo = this.oTextos.getText("seleccionar_titulo");
-                var vBP = oEvent.getSource().getBindingContext().getObject().Bp;
-                var vNombre = oEvent.getSource().getBindingContext().getObject().RazonSocial;
+                var vBP = oEvent.getSource().getBindingContext("ModelCuentas").getObject().Bp;
+                var vNombre = oEvent.getSource().getBindingContext("ModelCuentas").getObject().RazonSocial;
 
                 sap._sesionHB4 = { Bp: vBP, RazonSocial: vNombre };
 
@@ -86,57 +110,157 @@ sap.ui.define([
 
             //-------------------Inicio JOLU1----------------------
 
+            onAfterRendering: function () {
+                this._traerCuentas();
+                this._cargarFragments();
+            },
+
             onUpdateFinished: function (oEvent) {
                 var aItems = oEvent.getSource().getItems();
                 if (aItems.length > 0) {
-                    var oItem = aItems[0].getBindingContext().getObject();
+                    var oItem = aItems[0].getBindingContext("ModelCuentas").getObject();
                     var oViewModel = this.getView().getModel("viewModel");
-                    if (oItem.PuedeGenerarCuenta === "X") {
-                        oViewModel.setProperty("/puedeAgregarCuenta", true);
-                    } else {
-                        oViewModel.setProperty("/puedeAgregarCuenta", true);
-                    }
 
-                    if (oItem.PuedeGenerarUsuario === "X") {
-                        oViewModel.setProperty("/puedeAgregarUsuario", true);
+                    if (oItem.EsInterno === "X") {
+                        oViewModel.setProperty("/puedeAgregarCuenta", false);
+                        oViewModel.setProperty("/puedeAgregarUsuario", false);
+                        oViewModel.setProperty("/EsInterno", true);
                     } else {
+                        if (oItem.PuedeGenerarCuenta === "X") {
+                            oViewModel.setProperty("/puedeAgregarCuenta", true);
+                        } else {
+                            oViewModel.setProperty("/puedeAgregarCuenta", false);
+                        }
+
                         oViewModel.setProperty("/puedeAgregarUsuario", true);
                     }
+                    // if (oItem.PuedeGenerarUsuario === "X") {
+                    //     oViewModel.setProperty("/puedeAgregarUsuario", true);
+                    // } else {
+                    //     oViewModel.setProperty("/puedeAgregarUsuario", true);
+                    // }
                 }
+            },
+
+            onCloseMensaje: function () {
+                //cuando cierra el mensaje reviso si realizo el onboarding
+                oController.getView().getModel("onBoarding").read("/datosLandingSet(partner='1',cuit='1')", {
+                    success: function (oResponse) {
+                        if (oResponse.onBoardingCompleto) {
+                            console.log("Completó el onboarding");
+                            window.history.go(-1); //navega al launchpad
+                        } else {
+                            console.log("Aún no completó el onboarding");
+                            oController.navtoOnboarding(); // si no lo hizo navega
+                        }
+                    },
+                    error: function (oError) {
+                        console.log("Error al determinar si completó el onboarding");
+                        oController.navtoOnboarding();
+                    }
+                });
+            },
+
+            navtoOnboarding: function () {
+                //metodo para navegar al onboarding
+                var oCrossAppNavigator = sap.ushell.Container.getService("CrossApplicationNavigation"),
+                    hash = (oCrossAppNavigator && oCrossAppNavigator.hrefForExternal({
+                        target: {
+                            semanticObject: "Onboarding",
+                            action: "display"
+                        }
+                    })) || "";
+
+                oCrossAppNavigator.toExternal({
+                    target: {
+                        shellHash: hash
+                    }
+                });
+            },
+
+            onFiltrarCuentas: function () {
+                //metodo de filtro
+                var datos = oController.getView().byId("idTablaBPs").getBinding("items");
+
+                var filtro = new Filter([], true);
+
+                var sRazonSocial = this.getView().byId("_inpRS").getValue();
+
+                var sCuit = this.getView().byId("_inpCuit").getValue();
+
+                if (sRazonSocial) {
+                    filtro.aFilters.push(new Filter("RazonSocial", FilterOperator.Contains, sRazonSocial));
+                }
+
+                if (sCuit) {
+                    filtro.aFilters.push(new Filter("Cuit", FilterOperator.Contains, sCuit));
+                }
+
+                datos.filter(filtro, "Application");
             },
 
             //Agregar Usuario
             onAltaUsuario: function () {
-                //fragment agregar user
-                if (!this._oDialogAddUser) {
-                    var oView = this.getView();
-                    Fragment.load({
-                        id: oView.getId(),
-                        name: "zhb4.zhb4acceso.view.fragments.AddUser",
-                        controller: this
-                    }).then(function (oDialog) {
-                        this._oDialogAddUser = oDialog;
-                        this.getView().addDependent(oDialog);
-                        this.getView().byId("fileUploaderEst").clear();
-                        this._oDialogAddUser.open();
-                    }.bind(this));
-                } else {
-                    this.getView().byId("fileUploaderEst").clear();
-                    this._oDialogAddUser.open();
-                }
-
                 //cargo modelo vacío add user
                 var oDataAdd = {
                     email: "",
                     valueStateMail: "None",
-                    rol: "N",
-                    mostrarEstatuto: false
+                    rol: false,
+                    esApoderado: false,
+                    mostrarEstatuto: false,
+                    PuedeAgregar: true,
+                    PuedeGenerarNF: true
                 };
                 this.getView().getModel("ModelAddUser").setData(oDataAdd);
+
+                this._oDialogAddUser.open();
+                this.getView().byId("fileUploaderAct").clear();
+                this.getView().byId("fileUploaderEst").clear();
+                this._setCuentaDefault();
+
+                //fragment agregar user
+                // if (!this._oDialogAddUser) {
+                //     var oView = this.getView();
+                //     Fragment.load({
+                //         id: oView.getId(),
+                //         name: "zhb4.zhb4acceso.view.fragments.AddUser",
+                //         controller: this
+                //     }).then(function (oDialog) {
+                //         this._oDialogAddUser = oDialog;
+                //         this.getView().addDependent(oDialog);
+                //         this._oDialogAddUser.open();
+                //         this.getView().byId("fileUploaderAct").clear();
+                //         this.getView().byId("fileUploaderEst").clear();
+                //         this._setCuentaDefault();
+                //     }.bind(this));
+                // } else {
+                //     this.getView().byId("fileUploaderAct").clear();
+                //     this.getView().byId("fileUploaderEst").clear();
+                //     this._oDialogAddUser.open();
+                //     this._setCuentaDefault();
+                // }
             },
 
             onCancelarUser: function () {
                 this._oDialogAddUser.close();
+            },
+
+            onSeleccionarCuenta: function (oEvent) {
+                var sCuenta = oEvent.getSource().getSelectedItem().getBindingContext("ModelCuentas").getObject()
+                this._validarSiPuedeAgregar(sCuenta);
+            },
+
+            _validarSiPuedeAgregar: function (oCuenta) {
+                var oAddData = this.getView().getModel("ModelAddUser").getData();
+                oAddData.PuedeAgregar = true;
+                oAddData.PuedeGenerarNF = true;
+                if (oCuenta.PuedeGenerarUsuario !== "X") {
+                    oAddData.PuedeAgregar = false;
+                }
+                if (oCuenta.PuedeGenerarNF !== "X"){
+                    oAddData.PuedeGenerarNF = false;
+                }
+                this.getView().getModel("ModelAddUser").refresh();
             },
 
             onValidarMail: function (oEvent) {
@@ -154,12 +278,29 @@ sap.ui.define([
 
             onValidarRol: function (oEvent) {
                 //validar que rol ingresó para mostrar la carga del estatuto
-                var sRol = oEvent.getSource().getSelectedKey();
+                // var sRol = oEvent.getSource().getSelectedKey();
+                var sRol = oEvent.getSource().getState();
                 var oAddData = this.getView().getModel("ModelAddUser").getData();
-                if (sRol === "F") {
+                oAddData.esApoderado = false;
+                if (sRol) {
                     oAddData.mostrarEstatuto = true;
                 } else {
                     oAddData.mostrarEstatuto = false;
+                    this.getView().byId("fileUploaderAct").clear();
+                    this.getView().byId("fileUploaderEst").clear();
+                }
+                this.getView().getModel("ModelAddUser").refresh();
+            },
+
+            onValidarApoderado: function (oEvent) {
+                //validar si es apoderado
+                var sCheck = oEvent.getSource().getState();
+                var oAddData = this.getView().getModel("ModelAddUser").getData();
+                this.getView().byId("fileUploaderAct").clear();
+                if (sCheck) {
+                    oAddData.esApoderado = true;
+                } else {
+                    oAddData.esApoderado = false;
                 }
                 this.getView().getModel("ModelAddUser").refresh();
             },
@@ -170,6 +311,18 @@ sap.ui.define([
                 //valido si selecciono cuenta
                 if (!oAddData.bp) {
                     MessageToast.show(this.oTextos.getText("msj_sel_cuenta"));
+                    return;
+                }
+
+                //valido si ingreso nombre
+                if (!oAddData.nombre) {
+                    MessageToast.show(this.oTextos.getText("msj_ing_nombre"));
+                    return;
+                }
+
+                //valido si ingreso apellido
+                if (!oAddData.apellido) {
+                    MessageToast.show(this.oTextos.getText("msj_ing_apellido"));
                     return;
                 }
 
@@ -189,26 +342,51 @@ sap.ui.define([
                 oDatos.UserNombre = oAddData.nombre;
                 oDatos.UserApellido = oAddData.apellido;
                 oDatos.UserMail = oAddData.email;
-                oDatos.UserPerfil = oAddData.rol;
-                if (oDatos.UserPerfil === "F") {
+                if (oAddData.rol) {
+                    oDatos.UserPerfil = "F";
+                } else {
+                    oDatos.UserPerfil = "N";
+                    if(!oAddData.PuedeGenerarNF){
+                        MessageToast.show(this.oTextos.getText("msj_error_nf"));
+                        this.getView().byId("dialogAddUser").setBusy(false);
+                        return;
+                    }
+                }
+                if (oAddData.rol) {
                     var that = this;
-                    var aEstatutoPromise = this._obtenerEstatutoAgregarUser();
                     var aActaromise = this._obtenerActaAgregarUser();
-                    Promise.all([aEstatutoPromise, aActaromise]).then(function (aArchivos) {
-                        //aArchivos[0]->Estatuto  aArchivos[1]->acta
-                        if (!aArchivos[0]) {
-                            MessageToast.show(this.oTextos.getText("msj_ing_estatuto"));
-                            return;
-                        }
-                        if (!aArchivos[1]) {
-                            MessageToast.show(this.oTextos.getText("msj_ing_acta"));
-                            return;
-                        }
+                    if (oAddData.esApoderado) {
+                        Promise.all([aActaromise]).then(function (aArchivos) {
+                            //aArchivos[0]->acta
+                            if (!aArchivos[0]) {
+                                MessageToast.show(that.oTextos.getText("msj_ing_poder"));
+                                that.getView().byId("dialogAddUser").setBusy(false);
+                                return;
+                            }
 
-                        oDatos.UserEstatuto = aArchivos[0];
-                        oDatos.UserActa = aArchivos[1];
-                        that._crearSolicitudUser(oDatos);
-                    });
+                            oDatos.UserActa = aArchivos[0];
+                            that._crearSolicitudUser(oDatos);
+                        });
+                    } else {
+                        var aEstatutoPromise = this._obtenerEstatutoAgregarUser();
+                        Promise.all([aEstatutoPromise, aActaromise]).then(function (aArchivos) {
+                            //aArchivos[0]->Estatuto  aArchivos[1]->acta
+                            if (!aArchivos[0]) {
+                                MessageToast.show(that.oTextos.getText("msj_ing_estatuto"));
+                                that.getView().byId("dialogAddUser").setBusy(false);
+                                return;
+                            }
+                            if (!aArchivos[1]) {
+                                MessageToast.show(that.oTextos.getText("msj_ing_acta"));
+                                that.getView().byId("dialogAddUser").setBusy(false);
+                                return;
+                            }
+
+                            oDatos.UserEstatuto = aArchivos[0];
+                            oDatos.UserActa = aArchivos[1];
+                            that._crearSolicitudUser(oDatos);
+                        });
+                    }
                 } else {
                     this._crearSolicitudUser(oDatos);
                 }
@@ -258,6 +436,8 @@ sap.ui.define([
             onValidarCuit: function (oEvent) {
                 //validar si ingreso un cuit con la estructura correcta
                 var sCuit = oEvent.getSource().getValue();
+                var regObtenerCuit = /\-+/g;
+                sCuit = sCuit.replace(regObtenerCuit, "");
                 var bValidado = this._esCuitValido(sCuit);
                 var oAddData = this.getView().getModel("ModelAddBp").getData();
                 if (bValidado) {
@@ -364,7 +544,9 @@ sap.ui.define([
 
             onGuardarBp: function () {
                 var oAddData = this.getView().getModel("ModelAddBp").getData();
-                var bCuitValidado = this._esCuitValido(oAddData.cuit);
+                var regObtenerCuit = /\-+/g;
+                var sCuit = oAddData.cuit.replace(regObtenerCuit, "");
+                var bCuitValidado = this._esCuitValido(sCuit);
                 //valido si ingreso cuit
                 if (!bCuitValidado) {
                     MessageToast.show(this.oTextos.getText("msj_ing_cuit"));
@@ -404,26 +586,26 @@ sap.ui.define([
                 //cargo los datos ingresados
                 oDatos.Id = "1";
                 oDatos.TipoSolicitud = "B";
-                oDatos.BpCuit = oAddData.cuit;
+                oDatos.BpCuit = sCuit;
                 oDatos.BpCultivo = oAddData.cultivoCode;
                 oDatos.BpProvincia = oAddData.provinciaCode;
                 oDatos.BpDescProvincia = oAddData.provincia;
                 oDatos.BpLocalidad = oAddData.localidadCode;
-                oDatos.BpDescLocalidad = oAddData.provinciaCode;
+                oDatos.BpDescLocalidad = oAddData.descripcion;
                 oDatos.BpVariedad = oAddData.variedadCode;
                 oDatos.BpRindeEsperado = parseInt(oAddData.rindeEsperado).toString();
 
                 //hago el chequeo de nosis
                 var sPath = that.getView().getModel("nosisMDL").createKey("/CheckNosis", {
-                        Cuit: oAddData.cuit
-                    });
+                    Cuit: sCuit
+                });
                 that.getView().getModel("nosisMDL").read(sPath, {
                     success: function (oData) {
                         oDatos.BpRazonSocial = oData.RazonSocial; // la saco de la respuesta del chequeo nosis
-                        if(oData.PasoChequeo){
-                            oDatos.BpCheckCrediticio = "X";
+                        if (oData.PasoChequeo) {
+                            oDatos.BpCheckCrediticio = "";
                         } else {
-                            oDatos.BpCheckCrediticio = ""; // no lo pasó
+                            oDatos.BpCheckCrediticio = "X"; // no lo pasó
                         }
 
                         //mando solicitud de creación
@@ -439,13 +621,13 @@ sap.ui.define([
                             },
                             error: function (oError) {
                                 that.getView().byId("dialogAddBp").setBusy(false);
-                                MessageBox.error(this.oTextos.getText("msj_error_crear_sol"));
+                                MessageBox.error(that.oTextos.getText("msj_error_crear_sol"));
                             }
                         });
-                        
+
                     },
                     error: function (oError) {
-                        MessageBox.error(this.oTextos.getText("msj_error_crear_sol"));
+                        MessageBox.error(that.oTextos.getText("msj_error_crear_sol"));
                         that.getView().byId("dialogAddBp").setBusy(false);
                     }
                 });
@@ -456,8 +638,18 @@ sap.ui.define([
                 var oModelView = new JSONModel({
                     puedeAgregarUsuario: false,
                     puedeAgregarCuenta: false,
+                    EsInterno: false
                 });
                 this.getView().setModel(oModelView, "viewModel");
+
+                //modelo cultivos
+                var oModelCultivos = new JSONModel();
+                this.getView().setModel(oModelCultivos, "ModelCultivos");
+
+                //modelo cuentas
+                var oModelCuentas = new JSONModel();
+                oModelCuentas.setSizeLimit(10000);
+                this.getView().setModel(oModelCuentas, "ModelCuentas");
 
                 //modelo agregar usuario
                 var oModelAddUser = new JSONModel();
@@ -481,6 +673,79 @@ sap.ui.define([
                 var oModelVar = new JSONModel();
                 oModelVar.setSizeLimit(1000);
                 this.getView().setModel(oModelVar, "Variedades");
+            },
+
+            _cargarFragments: function () {
+                //fragment agregar user
+                if (!this._oDialogAddUser) {
+                    var oView = this.getView();
+                    Fragment.load({
+                        id: oView.getId(),
+                        name: "zhb4.zhb4acceso.view.fragments.AddUser",
+                        controller: this
+                    }).then(function (oDialog) {
+                        this._oDialogAddUser = oDialog;
+                        this.getView().addDependent(oDialog);
+                    }.bind(this));
+                }
+
+                //fragment agregar user
+                if (!this._oDialogAddBp) {
+                    var oView = this.getView();
+                    Fragment.load({
+                        id: oView.getId(),
+                        name: "zhb4.zhb4acceso.view.fragments.AddBp",
+                        controller: this
+                    }).then(function (oDialog) {
+                        this._oDialogAddBp = oDialog;
+                        this.getView().addDependent(oDialog);
+                        this._traerCultivos();
+                    }.bind(this));
+                }
+            },
+
+            _traerCuentas: function () {
+                var that = this;
+                this.getView().byId("page").setBusy(true);
+                this.getView().getModel().read("/bpsAsociadosSet", {
+                    success: function (oData) {
+                        that.getView().getModel("ModelCuentas").setData(oData.results);
+                        that.getView().byId("page").setBusy(false);
+                    },
+                    error: function (oError) {
+                        that.getView().getModel("ModelCuentas").setData([]);
+                        that.getView().byId("page").setBusy(false);
+                    }
+                });
+            },
+
+            _traerCultivos: function () {
+                var that = this;
+                this.getView().byId("cboCultivo").setBusy(true);
+                this.getView().getModel("landingMDL").read("/Cultivos", {
+                    success: function (oData) {
+                        that.getView().getModel("ModelCultivos").setData(oData.results);
+                        that.getView().byId("cboCultivo").setBusy(false);
+                    },
+                    error: function (oError) {
+                        that.getView().getModel("ModelCultivos").setData([]);
+                        that.getView().byId("cboCultivo").setBusy(false);
+                    }
+                });
+            },
+
+            _setCuentaDefault: function () {
+                var aCuentas = this.getView().getModel("ModelCuentas").getData();
+                this.getView().byId("cboCuenta").setEditable(true);
+                if (aCuentas.length === 0) {
+                    this.getView().byId("cboCuenta").setEditable(false);
+                } else if (aCuentas.length === 1) {
+                    var sCuenta = aCuentas[0].Bp;
+                    this.getView().getModel("ModelAddUser").setProperty("/bp", sCuenta);
+                    // this.getView().byId("cboCuenta").setSelectedKey(sCuenta);
+                    this.getView().byId("cboCuenta").setEditable(false);
+                    this._validarSiPuedeAgregar(aCuentas[0]);
+                }
             },
 
             _obtenerEstatutoAgregarUser: function () {
@@ -528,7 +793,7 @@ sap.ui.define([
                 });
             },
 
-            _crearSolicitudUser: function(oDatos){
+            _crearSolicitudUser: function (oDatos) {
                 var that = this;
                 this.getView().getModel().create("/solicitudAgregadoSet", oDatos, {
                     success: function (oData) {
@@ -542,19 +807,19 @@ sap.ui.define([
                     },
                     error: function (oError) {
                         that.getView().byId("dialogAddUser").setBusy(false);
-                        MessageBox.error(this.oTextos.getText("msj_error_crear_sol"));
+                        MessageBox.error(that.oTextos.getText("msj_error_crear_sol"));
                     }
                 });
             },
 
             _esMailValido: function (sMail) {
                 var regexMail = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-                return regexMail.test(sMail) ? true : false;
+                return regexMail.test(sMail);
             },
 
             _esCuitValido: function (sCuit) {
                 var regexCuit = /\b(20|23|24|27|30|33|34)[0-9]{8}[0-9]/g;
-                return regexCuit.test(sCuit) ? true : false;
+                return regexCuit.test(sCuit);
             }
             //-------------------Fin JOLU1----------------------
         });

@@ -46,9 +46,23 @@ modules:
       - zhb4zhb4acceso.zip
       name: zhb4zhb4acceso
       target-path: resources/
+    - artifacts:
+      - zhb4zhb4accesotile.zip
+      name: zhb4zhb4accesotile
+      target-path: resources/
 - name: zhb4zhb4acceso
   type: html5
   path: .
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: zhb4zhb4accesotile
+  type: html5
+  path: zhb4_acceso_tile
   build-parameters:
     build-result: dist
     builder: custom

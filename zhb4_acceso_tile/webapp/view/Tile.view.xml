@@ -1,0 +1,16 @@
+<mvc:View
+    controllerName="zhb4.zhb4accesotile.controller.Tile"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+>
+	<GenericTile header="Gestion de Accesos" subheader="Cuentas y Usuarios" frameType="OneByOne" press="onPressTile" headerImage="sap-icon://account">
+        <TileContent id="_tileContent" footer="Ingresa aqui" footerColor="Good">
+            <!-- <FeedContent contentText="Gestione sus cuentas e ingrese nuevos usuarios"/> -->
+            <VBox id="box" class="sapUiTinyMarginTop">
+                <Text class="texto" text="Gestione sus cuentas e ingrese nuevos usuarios"/>
+                <ObjectStatus text="Marque su cuenta favorita" icon="sap-icon://favorite" state="Warning" class="textoStatus sapUiTinyMarginTop sapUiTinyMarginEnd"/>
+            </VBox>
+		</TileContent>
+	</GenericTile>
+</mvc:View>
