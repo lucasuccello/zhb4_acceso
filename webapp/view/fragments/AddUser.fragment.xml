@@ -14,7 +14,7 @@
                                             </ComboBox>
                                             <MessageStrip
                                                 visible="{= !${ModelAddUser>/PuedeAgregar}}"
-                                                text="No puede agregar mas usuarios en la cuenta seleccionada"
+                                                text="{i18n>msj_error_cant_cuentas}"
                                                 type="Error"
                                                 showIcon="true"
                                                 enableFormattedText="true"
@@ -78,7 +78,7 @@
                                         <!-- <CheckBox text="Es Apoderado" selected="{ModelAddUser>/esApoderado}" select="onValidarApoderado"/> -->
                                         <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
                                             <Label text="{i18n>lbl_apoderado}:" class="sapUiTinyMarginEnd"/>
-                                            <Switch state="{ModelAddUser>/esApoderado}" customTextOn="Si" customTextOff="No" change="onValidarApoderado">
+                                            <Switch state="{ModelAddUser>/esApoderado}" customTextOn="{i18n>txt_si}" customTextOff="{i18n>txt_no}" change="onValidarApoderado">
                                                 <layoutData>
                                                     <FlexItemData growFactor="1" />
                                                 </layoutData>

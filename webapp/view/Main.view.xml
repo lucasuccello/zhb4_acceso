@@ -11,13 +11,13 @@
                         <fb:FilterBar id="filterBar" class="sapUiResponsivePadding--header sapUiResponsivePadding--content sapUiNoMargin" reset="onReset"
                             search="onSearch" showGoOnFB="false" showRestoreButton="false" showClearButton="false" useToolbar="false" showFilterConfiguration="false">
                             <fb:filterGroupItems>
-                                <fb:FilterGroupItem groupName="__$INTERNAL$" name="RazonSocial" label="Razon Social" partOfCurrentVariant="true"
+                                <fb:FilterGroupItem groupName="__$INTERNAL$" name="RazonSocial" label="{i18n>lbl_razon}" partOfCurrentVariant="true"
                                     visibleInFilterBar="true">
                                     <fb:control>
                                         <SearchField id="_inpRS" width="200px" search="onFiltrarCuentas"/>
                                     </fb:control>
                                 </fb:FilterGroupItem>
-                                <fb:FilterGroupItem groupName="__$INTERNAL$" name="Cuit" label="Cuit" partOfCurrentVariant="true"
+                                <fb:FilterGroupItem groupName="__$INTERNAL$" name="Cuit" label="{i18n>lbl_cuit}" partOfCurrentVariant="true"
                                     visibleInFilterBar="true">
                                     <fb:control>
                                         <SearchField id="_inpCuit" width="200px" search="onFiltrarCuentas"/>

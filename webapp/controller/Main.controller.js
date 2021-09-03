@@ -6,12 +6,14 @@ sap.ui.define([
     "sap/ui/core/Fragment",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+    "sap/ui/core/routing/History",
+    "sap/ui/core/EventBus"
 ],
 	/**
 	 * @param {typeof sap.ui.core.mvc.Controller} Controller
 	 */
-    function (Controller, formatter, MessageBox, MessageToast, Fragment, JSONModel, Filter, FilterOperator) {
+    function (Controller, formatter, MessageBox, MessageToast, Fragment, JSONModel, Filter, FilterOperator, History, EventBus) {
         "use strict";
 
         var oController;
@@ -28,11 +30,14 @@ sap.ui.define([
             },
 
             onFavorito: function (oEvent) {
+                var that= this;
                 var oObject = oEvent.getSource().getBindingContext("ModelCuentas").getObject();
+                var msg = that.oTextos.getText("mensaje_guardar_favorito");
+                var tit = that.oTextos.getText("mensaje_confirmar");
                 MessageBox.show(
-                    "Se guardará como favorita la cuenta seleccionada", {
+                    msg, {
                     icon: MessageBox.Icon.INFORMATION,
-                    title: "Confirmar",
+                    title: tit,
                     actions: [MessageBox.Action.CANCEL, MessageBox.Action.OK],
                     emphasizedAction: MessageBox.Action.OK,
                     onClose: function (oAction) {
@@ -64,13 +69,26 @@ sap.ui.define([
 
                 this.getView().getModel().update(sPath, oEntry, {
                     success: function (resultado) {
-                        sap.m.MessageToast.show(that.oTextos.getText("mensaje_success_agregar_favorito"), {
-                            onClose: window.location.reload()
-                        });
+                        // sap.m.MessageToast.show(that.oTextos.getText("mensaje_success_agregar_favorito"), {
+                        //     onClose: window.location.reload(true)
+                        // });
+                        var tit = that.oTextos.getText("mensaje_mod_success");
                         this.getView().setBusy(false);
+                        MessageBox.success(that.oTextos.getText("mensaje_success_agregar_favorito"), {
+                            title: tit,
+                            onClose: function () {
+                                var oCrossAppNav = sap.ushell && sap.ushell.Container && sap.ushell.Container.getService("CrossApplicationNavigation");
+                                var href_display = (oCrossAppNav && oCrossAppNav.toExternal({
+                                    target: {
+                                        semanticObject: "Shell",
+                                        action: "home"
+                                    }
+                                })) || "";
+                            }
+                        });
                     }.bind(this),
                     error: function (error) {
-                        sap.m.MessageToast.show("No se pudo settear Favorito");
+                        sap.m.MessageToast.show(that.oTextos.getText("mensaje_error_favorito"));
                         this.getView().setBusy(false);
                     }
                 });
@@ -97,6 +115,13 @@ sap.ui.define([
 
 
                 mensaje = this.oTextos.getText("seleccionar_mensaje", [vNombre, vBP]);
+
+                // storage write
+                var sStid = "BpLogueado";
+                if (!jQuery.sap.storage.put(sStid, vBP)) {
+                    var oStorage = jQuery.sap.storage(jQuery.sap.storage.Type.session);
+                    oStorage.put(sStid, vBP);
+                }
 
                 MessageBox.success(mensaje, {
                     title: titulo,
@@ -126,6 +151,7 @@ sap.ui.define([
                         oViewModel.setProperty("/puedeAgregarUsuario", false);
                         oViewModel.setProperty("/EsInterno", true);
                     } else {
+                        oViewModel.setProperty("/EsInterno", false);
                         if (oItem.PuedeGenerarCuenta === "X") {
                             oViewModel.setProperty("/puedeAgregarCuenta", true);
                         } else {
@@ -147,15 +173,33 @@ sap.ui.define([
                 oController.getView().getModel("onBoarding").read("/datosLandingSet(partner='1',cuit='1')", {
                     success: function (oResponse) {
                         if (oResponse.onBoardingCompleto) {
-                            console.log("Completó el onboarding");
-                            window.history.go(-1); //navega al launchpad
+                            // console.log("Completó el onboarding");
+                            // window.history.go(-1); //navega al launchpad
+                            // var oCrossAppNavigator = sap.ushell.Container.getService("CrossApplicationNavigation");
+                            // // // Nav al inicio
+                            // oCrossAppNavigator.toExternal({
+                            //     target: {
+                            //         shellHash: "#/pluginOnboarding.hb4pluginOnboarding/~171220193709+0000~/"
+                            //     }
+                            // });
+                            // window.location.reload(document.referrer);
+                            // location.replace(document.referrer);
+                            var oCrossAppNav = sap.ushell && sap.ushell.Container && sap.ushell.Container.getService("CrossApplicationNavigation");
+                            var href_display = (oCrossAppNav && oCrossAppNav.toExternal({
+                                target: {
+                                    semanticObject: "Shell",
+                                    action: "home"
+                                }
+                            })) || "";
+                            // window.open('https://bioxqas.cpp.cfapps.us21.hana.ondemand.com/site?siteId=d6945a69-27cd-4675-af10-18d0ef6425ea#Shell-home', '_blank');
+                            // window.location.reload(true);
                         } else {
-                            console.log("Aún no completó el onboarding");
+                            // console.log("Aún no completó el onboarding");
                             oController.navtoOnboarding(); // si no lo hizo navega
                         }
                     },
                     error: function (oError) {
-                        console.log("Error al determinar si completó el onboarding");
+                        // console.log("Error al determinar si completó el onboarding");
                         oController.navtoOnboarding();
                     }
                 });
@@ -217,28 +261,6 @@ sap.ui.define([
                 this.getView().byId("fileUploaderAct").clear();
                 this.getView().byId("fileUploaderEst").clear();
                 this._setCuentaDefault();
-
-                //fragment agregar user
-                // if (!this._oDialogAddUser) {
-                //     var oView = this.getView();
-                //     Fragment.load({
-                //         id: oView.getId(),
-                //         name: "zhb4.zhb4acceso.view.fragments.AddUser",
-                //         controller: this
-                //     }).then(function (oDialog) {
-                //         this._oDialogAddUser = oDialog;
-                //         this.getView().addDependent(oDialog);
-                //         this._oDialogAddUser.open();
-                //         this.getView().byId("fileUploaderAct").clear();
-                //         this.getView().byId("fileUploaderEst").clear();
-                //         this._setCuentaDefault();
-                //     }.bind(this));
-                // } else {
-                //     this.getView().byId("fileUploaderAct").clear();
-                //     this.getView().byId("fileUploaderEst").clear();
-                //     this._oDialogAddUser.open();
-                //     this._setCuentaDefault();
-                // }
             },
 
             onCancelarUser: function () {
@@ -257,7 +279,7 @@ sap.ui.define([
                 if (oCuenta.PuedeGenerarUsuario !== "X") {
                     oAddData.PuedeAgregar = false;
                 }
-                if (oCuenta.PuedeGenerarNF !== "X"){
+                if (oCuenta.PuedeGenerarNF !== "X") {
                     oAddData.PuedeGenerarNF = false;
                 }
                 this.getView().getModel("ModelAddUser").refresh();
@@ -339,6 +361,11 @@ sap.ui.define([
                 oDatos.Id = "1";
                 oDatos.TipoSolicitud = "U";
                 oDatos.UserBp = oAddData.bp;
+                //saco la razon social del bp seleccionado
+                if(this.getView().byId("cboCuenta").getSelectedItem()){
+                    var oCuenta = this.getView().byId("cboCuenta").getSelectedItem().getBindingContext("ModelCuentas").getObject();
+                    oDatos.BpRazonSocial = oCuenta.RazonSocial;
+                }
                 oDatos.UserNombre = oAddData.nombre;
                 oDatos.UserApellido = oAddData.apellido;
                 oDatos.UserMail = oAddData.email;
@@ -346,7 +373,7 @@ sap.ui.define([
                     oDatos.UserPerfil = "F";
                 } else {
                     oDatos.UserPerfil = "N";
-                    if(!oAddData.PuedeGenerarNF){
+                    if (!oAddData.PuedeGenerarNF) {
                         MessageToast.show(this.oTextos.getText("msj_error_nf"));
                         this.getView().byId("dialogAddUser").setBusy(false);
                         return;
@@ -638,7 +665,7 @@ sap.ui.define([
                 var oModelView = new JSONModel({
                     puedeAgregarUsuario: false,
                     puedeAgregarCuenta: false,
-                    EsInterno: false
+                    EsInterno: true
                 });
                 this.getView().setModel(oModelView, "viewModel");
 
