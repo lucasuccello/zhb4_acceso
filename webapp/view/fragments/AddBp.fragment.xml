@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:tnt="sap.tnt" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+<core:FragmentDefinition xmlns="sap.m" xmlns:u="sap.ui.unified" xmlns:l="sap.ui.layout" xmlns:tnt="sap.tnt" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
 	<Dialog id="dialogAddBp" title="{i18n>tit_addBp}" contentWidth="30%" busyIndicatorDelay="0">
 		<l:Grid defaultSpan="L12 M12 S12" width="auto" id="idGridAddBp">
 			<l:content>
@@ -61,6 +61,48 @@
                                     </f:fields>
                                     <f:label>
                                         <Label text="{i18n>lbl_rinde}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{ModelAddBp>/mostrarVariedad}">
+                                    <f:fields>
+                                        <VBox>
+                                            <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
+                                                <Label text="{i18n>lbl_rol}:" class="sapUiTinyMarginEnd"/>
+                                                <Switch state="{ModelAddBp>/rol}" customTextOn="Si" customTextOff="No" change="onValidarRolBp">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Switch>
+                                            </HBox>
+                                        </VBox>
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement visible="{= ${ModelAddBp>/mostrarEstatuto}}">
+                                    <f:fields>
+                                        <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
+                                            <Label text="{i18n>lbl_apoderado}:" class="sapUiTinyMarginEnd"/>
+                                            <Switch state="{ModelAddBp>/esApoderado}" customTextOn="{i18n>txt_si}" customTextOff="{i18n>txt_no}" change="onValidarApoderadoBp">
+                                                <layoutData>
+                                                    <FlexItemData growFactor="1" />
+                                                </layoutData>
+                                            </Switch>
+                                        </HBox>
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement visible="{= ${ModelAddBp>/mostrarEstatuto} &amp;&amp; !${ModelAddBp>/esApoderado}}">
+                                    <f:fields>
+                                        <u:FileUploader buttonText="{i18n>txt_bot_fu}" icon="sap-icon://upload" id="fileUploaderEstBp" fileType="pdf" width="100%" name="Estatuto" tooltip="{i18n>tlt_estatuto}"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{i18n>lbl_estatuto}" required="true"/>
+                                    </f:label>
+                                </f:FormElement>
+                                <f:FormElement visible="{= ${ModelAddBp>/mostrarEstatuto}}">
+                                    <f:fields>
+                                        <u:FileUploader buttonText="{i18n>txt_bot_fu}" icon="sap-icon://upload" id="fileUploaderActBp" fileType="pdf" width="100%" name="Acta" tooltip="{i18n>tlt_acta}"/>
+                                    </f:fields>
+                                    <f:label>
+                                        <Label text="{= ${ModelAddBp>/esApoderado} ? ${i18n>lbl_poder} : ${i18n>lbl_acta}}" required="true"/>
                                     </f:label>
                                 </f:FormElement>
                             </f:formElements>

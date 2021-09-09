@@ -30,7 +30,7 @@ sap.ui.define([
             },
 
             onFavorito: function (oEvent) {
-                var that= this;
+                var that = this;
                 var oObject = oEvent.getSource().getBindingContext("ModelCuentas").getObject();
                 var msg = that.oTextos.getText("mensaje_guardar_favorito");
                 var tit = that.oTextos.getText("mensaje_confirmar");
@@ -77,13 +77,14 @@ sap.ui.define([
                         MessageBox.success(that.oTextos.getText("mensaje_success_agregar_favorito"), {
                             title: tit,
                             onClose: function () {
-                                var oCrossAppNav = sap.ushell && sap.ushell.Container && sap.ushell.Container.getService("CrossApplicationNavigation");
-                                var href_display = (oCrossAppNav && oCrossAppNav.toExternal({
-                                    target: {
-                                        semanticObject: "Shell",
-                                        action: "home"
-                                    }
-                                })) || "";
+                                // var oCrossAppNav = sap.ushell && sap.ushell.Container && sap.ushell.Container.getService("CrossApplicationNavigation");
+                                // var href_display = (oCrossAppNav && oCrossAppNav.toExternal({
+                                //     target: {
+                                //         semanticObject: "Shell",
+                                //         action: "home"
+                                //     }
+                                // })) || "";
+                                that._traerCuentas();
                             }
                         });
                     }.bind(this),
@@ -362,7 +363,7 @@ sap.ui.define([
                 oDatos.TipoSolicitud = "U";
                 oDatos.UserBp = oAddData.bp;
                 //saco la razon social del bp seleccionado
-                if(this.getView().byId("cboCuenta").getSelectedItem()){
+                if (this.getView().byId("cboCuenta").getSelectedItem()) {
                     var oCuenta = this.getView().byId("cboCuenta").getSelectedItem().getBindingContext("ModelCuentas").getObject();
                     oDatos.BpRazonSocial = oCuenta.RazonSocial;
                 }
@@ -432,6 +433,8 @@ sap.ui.define([
                         this._oDialogAddBp = oDialog;
                         this.getView().addDependent(oDialog);
                         this._oDialogAddBp.open();
+                        this.getView().byId("fileUploaderActBp").clear();
+                        this.getView().byId("fileUploaderEstBp").clear();
                     }.bind(this));
                 } else {
                     this._oDialogAddBp.open();
@@ -451,7 +454,10 @@ sap.ui.define([
                     localidad: "",
                     mostrarVariedad: false,
                     variedadCode: "",
-                    variedad: ""
+                    variedad: "",
+                    rol: false,
+                    esApoderado: false,
+                    mostrarEstatuto: false,
                 };
                 this.getView().getModel("ModelAddBp").setData(oDataAdd);
             },
@@ -622,9 +628,96 @@ sap.ui.define([
                 oDatos.BpVariedad = oAddData.variedadCode;
                 oDatos.BpRindeEsperado = parseInt(oAddData.rindeEsperado).toString();
 
+                //NUEVO
+                if (oAddData.rol) {
+                    oDatos.UserPerfil = "F";
+                } else {
+                    oDatos.UserPerfil = "N";
+                }
+                if (oAddData.rol) {
+                    var that = this;
+                    oDatos.BpCreador = "X"
+                    var aActaromise = this._obtenerActaAgregarBp();
+                    if (oAddData.esApoderado) {
+                        Promise.all([aActaromise]).then(function (aArchivos) {
+                            //aArchivos[0]->acta
+                            if (!aArchivos[0]) {
+                                MessageToast.show(that.oTextos.getText("msj_ing_poder"));
+                                that.getView().byId("dialogAddBp").setBusy(false);
+                                return;
+                            }
+                            oDatos.UserActa = aArchivos[0];
+                            that._checkNosis(oDatos);
+                        });
+                    } else {
+                        var aEstatutoPromise = this._obtenerEstatutoAgregarBp();
+                        Promise.all([aEstatutoPromise, aActaromise]).then(function (aArchivos) {
+                            //aArchivos[0]->Estatuto  aArchivos[1]->acta
+                            if (!aArchivos[0]) {
+                                MessageToast.show(that.oTextos.getText("msj_ing_estatuto"));
+                                that.getView().byId("dialogAddBp").setBusy(false);
+                                return;
+                            }
+                            if (!aArchivos[1]) {
+                                MessageToast.show(that.oTextos.getText("msj_ing_acta"));
+                                that.getView().byId("dialogAddBp").setBusy(false);
+                                return;
+                            }
+
+                            oDatos.UserEstatuto = aArchivos[0];
+                            oDatos.UserActa = aArchivos[1];
+                            that._checkNosis(oDatos);
+                        });
+                    }
+                } else {
+                    this._checkNosis(oDatos);
+                }
+
+                //NUEVO
+
                 //hago el chequeo de nosis
+                // var sPath = that.getView().getModel("nosisMDL").createKey("/CheckNosis", {
+                //     Cuit: sCuit
+                // });
+                // that.getView().getModel("nosisMDL").read(sPath, {
+                //     success: function (oData) {
+                //         oDatos.BpRazonSocial = oData.RazonSocial; // la saco de la respuesta del chequeo nosis
+                //         if (oData.PasoChequeo) {
+                //             oDatos.BpCheckCrediticio = "";
+                //         } else {
+                //             oDatos.BpCheckCrediticio = "X"; // no lo pasó
+                //         }
+
+                //         //mando solicitud de creación
+                //         that.getView().getModel().create("/solicitudAgregadoSet", oDatos, {
+                //             success: function (oData) {
+                //                 that.getView().byId("dialogAddBp").setBusy(false);
+                //                 if (oData.Error === "X") {
+                //                     MessageBox.error(oData.Mensaje);
+                //                 } else {
+                //                     that._oDialogAddBp.close();
+                //                     MessageBox.success(oData.Mensaje);
+                //                 }
+                //             },
+                //             error: function (oError) {
+                //                 that.getView().byId("dialogAddBp").setBusy(false);
+                //                 MessageBox.error(that.oTextos.getText("msj_error_crear_sol"));
+                //             }
+                //         });
+
+                //     },
+                //     error: function (oError) {
+                //         MessageBox.error(that.oTextos.getText("msj_error_crear_sol"));
+                //         that.getView().byId("dialogAddBp").setBusy(false);
+                //     }
+                // });
+            },
+
+            _checkNosis: function (oDatos){
+                //hago el chequeo de nosis
+                var that = this;
                 var sPath = that.getView().getModel("nosisMDL").createKey("/CheckNosis", {
-                    Cuit: sCuit
+                    Cuit: oDatos.BpCuit
                 });
                 that.getView().getModel("nosisMDL").read(sPath, {
                     success: function (oData) {
@@ -749,7 +842,11 @@ sap.ui.define([
             _traerCultivos: function () {
                 var that = this;
                 this.getView().byId("cboCultivo").setBusy(true);
+                var aFilters = [];
+
+                aFilters.push(new Filter("ID", FilterOperator.EQ, 'SO'));
                 this.getView().getModel("landingMDL").read("/Cultivos", {
+                    filters: aFilters,
                     success: function (oData) {
                         that.getView().getModel("ModelCultivos").setData(oData.results);
                         that.getView().byId("cboCultivo").setBusy(false);
@@ -785,10 +882,30 @@ sap.ui.define([
                 });
             },
 
+            _obtenerEstatutoAgregarBp: function () {
+                var that = this;
+                return new Promise(function (resolve, reject) {
+                    var oFileUploader = that.getView().byId("fileUploaderEstBp");
+                    that._obtenerValorArchivo(oFileUploader).then(function (oResponse) {
+                        resolve(oResponse);
+                    });
+                });
+            },
+
             _obtenerActaAgregarUser: function () {
                 var that = this;
                 return new Promise(function (resolve, reject) {
                     var oFileUploader = that.getView().byId("fileUploaderAct");
+                    that._obtenerValorArchivo(oFileUploader).then(function (oResponse) {
+                        resolve(oResponse);
+                    });
+                });
+            },
+
+            _obtenerActaAgregarBp: function () {
+                var that = this;
+                return new Promise(function (resolve, reject) {
+                    var oFileUploader = that.getView().byId("fileUploaderActBp");
                     that._obtenerValorArchivo(oFileUploader).then(function (oResponse) {
                         resolve(oResponse);
                     });
@@ -847,7 +964,37 @@ sap.ui.define([
             _esCuitValido: function (sCuit) {
                 var regexCuit = /\b(20|23|24|27|30|33|34)[0-9]{8}[0-9]/g;
                 return regexCuit.test(sCuit);
-            }
+            },
             //-------------------Fin JOLU1----------------------
+
+
+            //NUEVA LOGICA 
+            onValidarRolBp: function (oEvent) {
+                //validar que rol ingresó para mostrar la carga del estatuto
+                var sRol = oEvent.getSource().getState();
+                var oAddData = this.getView().getModel("ModelAddBp").getData();
+                oAddData.esApoderado = false;
+                if (sRol) {
+                    oAddData.mostrarEstatuto = true;
+                } else {
+                    oAddData.mostrarEstatuto = false;
+                    this.getView().byId("fileUploaderActBp").clear();
+                    this.getView().byId("fileUploaderEstBp").clear();
+                }
+                this.getView().getModel("ModelAddBp").refresh();
+            },
+
+            onValidarApoderadoBp: function (oEvent) {
+                //validar si es apoderado
+                var sCheck = oEvent.getSource().getState();
+                var oAddData = this.getView().getModel("ModelAddBp").getData();
+                this.getView().byId("fileUploaderActBp").clear();
+                if (sCheck) {
+                    oAddData.esApoderado = true;
+                } else {
+                    oAddData.esApoderado = false;
+                }
+                this.getView().getModel("ModelAddBp").refresh();
+            },
         });
     });
